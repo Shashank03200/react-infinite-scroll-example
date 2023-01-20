@@ -1,13 +1,35 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import usePosts from "./hooks/usePosts";
 import Post from "./Post";
 
 export default function Example1() {
   const [pageNum, setPageNum] = useState(0);
-  const lastPostRef = useRef();
+  // const lastPostRef = useRef();
 
   const { isLoading, isError, error, results, hasNextPage } = usePosts(pageNum);
   console.log("Results", results);
+
+  const intObserver = useRef();
+  const lastPostRef = useCallback((post) => {
+    if (isLoading) return;
+    if (intObserver.current) intObserver.current.disconnect();
+    intObserver.current = new IntersectionObserver(
+      (posts) => {
+        if (posts[0].isIntersecting && hasNextPage) {
+          console.log("POST", post);
+          console.log("We are near the last post !");
+          setPageNum((prev) => prev + 1);
+        }
+      },
+      [isLoading, hasNextPage]
+    );
+
+    if (post)
+      intObserver.current.observe(post, {
+        rootMargin: "0% 0% -30% 0%",
+        threshold: 0.1,
+      });
+  });
 
   if (isError) return <p className="center">Error : {error.message}</p>;
 
