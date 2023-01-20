@@ -37,6 +37,6 @@ export default function usePosts(pageNum) {
     isLoading,
     isError,
     error,
-    hasNextPage
+    hasNextPage,
   };
 }
